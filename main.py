@@ -7,6 +7,9 @@ from plyer import notification
 import pyautogui
 import wikipedia
 import pywhatkit
+import user_config
+import smtplib, ssl
+import genai as ai
 
 
 def speak(audio):
@@ -15,7 +18,7 @@ def speak(audio):
     # VOICE
     voices = engine.getProperty("voices")  # getting details of current voice
     engine.setProperty(
-        "voice", voices[1].id
+        "voice", voices[0].id
     )  # changing index, changes voices. 1 for female
     engine.setProperty("rate", 170)  # setting up new voice rate
     engine.stop()
@@ -185,12 +188,18 @@ def main():
                 print(e)
 
         # send whatsapp message
-        elif "send whatsapp message" in request:
+        elif "send whatsapp" in request:
             speak("Please provide the phone number, including country code.")
-            phone_number = input("Enter the phone number: ")
+            phone_number = input("Enter the phone number: ").strip()
             speak("What is the message?")
             message = command()
-            pywhatkit.sendwhatmsg("+8801308133343", "Hi", 13, 30)
+            print("Sending WhatsApp message to", phone_number, "with message:", message)
+            pywhatkit.sendwhatmsg(
+                phone_number,
+                message,
+                datetime.datetime.now().hour,
+                datetime.datetime.now().minute + 2,
+            )
             try:
                 pywhatkit.sendwhatmsg_instantly(phone_number, message)
                 speak("WhatsApp message sent successfully.")
@@ -205,13 +214,51 @@ def main():
             webbrowser.open(f"https://www.google.com/search?q={search_query}")
             speak(f"Here are the Google search results for {search_query}, Sir.")
 
+        # Send email
+        # elif "send email" in request:
+        #     print(user_config.gamil_pass)
+        #     pywhatkit.send_mail(
+        #         "nusrat.ssb003@gmail.com",
+        #         user_config.gamil_pass,
+        #         "Hello",
+        #         "Hi there how are you",
+        #         "sahoreiasorker03@gmail.com",
+        #     )
+
+        elif "send email" in request:
+            s = smtplib.SMTP("mail.toytree.top", 587)
+            s.starttls()
+            s.login(
+                "one1@toytree.top",
+                user_config.email_pass,
+            )
+            message = (
+                "From: one1@toytree.top\n"
+                "To: sahoreiasorker@gmail.com\n"
+                "Subject: Test Email from JARVIS\n\n"
+                "This is a test email from JARVIS AI Assistant.  I hope you are doing well!"
+            )
+            s.sendmail("one1@toytree.top", "nusrat.ssb001@gmail.com", message)
+            s.quit()
+            speak("Email sent successfully.")
+
+        # genAI query
+        elif "ask ai" in request or "ask genai" in request:
+            speak("What is your question for the AI?")
+            ai_prompt = command()
+            if ai_prompt != "" and ai_prompt != "exit":
+                speak("Getting response from AI.")
+                ai_response = ai.send_prompt(ai_prompt)
+                speak("According to the AI")
+                speak(ai_response)
+
         # exit program
         elif "exit" in request or "stop" in request or "bye" in request:
             speak("Goodbye, Sir. Have a nice day.")
             break
+        else:
+            request = request.replace("jarvis", "").strip()
 
 
-main()
-
-
-# speak("Hello, this is a text to speech test.")
+if __name__ == "__main__":
+    main()

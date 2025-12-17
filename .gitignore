@@ -1,0 +1,6 @@
+user_config.py
+__pycache__/
+todo/
+*.pyc
+
+.env
