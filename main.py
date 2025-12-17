@@ -10,15 +10,17 @@ import pywhatkit
 import user_config
 import smtplib, ssl
 import genai as ai
+import mtranslate as mt
 
 
 def speak(audio):
+    audio = mt.translate(audio, "bn")
     print("\n🔊 Speaking:", audio)
     engine = pyttsx3.init()
     # VOICE
     voices = engine.getProperty("voices")  # getting details of current voice
     engine.setProperty(
-        "voice", voices[0].id
+        "voice", voices[1].id
     )  # changing index, changes voices. 1 for female
     engine.setProperty("rate", 170)  # setting up new voice rate
     engine.stop()
@@ -36,8 +38,10 @@ def command():
             audio = r.listen(source)
         # recognize speech using Google Speech Recognition
         try:
-            content = r.recognize_google(audio, language="en-BD")
-            print("Your Command: " + content)
+            content = r.recognize_google(audio, language="bn-BD")
+            print("You said in Bangla: " + content)
+            content = mt.translate(content, to_language="en-US")  # --
+            print("Your Command in English: " + content)
         except Exception as e:
             print("Please try again....")
     return content
@@ -256,8 +260,18 @@ def main():
         elif "exit" in request or "stop" in request or "bye" in request:
             speak("Goodbye, Sir. Have a nice day.")
             break
-        else:
-            request = request.replace("jarvis", "").strip()
+        # else:
+        #     jarvis_chat = []
+        #     request = request.replace("jarvis", "").strip()
+
+        #     jarvis_chat.append({"role": "user", "content": request})
+        #     ai_prompt = command()
+        #     if ai_prompt != "" and ai_prompt != "exit":
+        #         speak("Getting response from AI.")
+        #         ai_response = ai.send_prompt(ai_prompt)
+        #         jarvis_chat.append({"role": "assistant", "content": ai_response})
+        #         speak("According to the AI")
+        #         speak(ai_response)
 
 
 if __name__ == "__main__":

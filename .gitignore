@@ -1,6 +1,8 @@
 user_config.py
 __pycache__/
-todo/
+todo/todo.txt
 *.pyc
+
+todo/
 
 .env
